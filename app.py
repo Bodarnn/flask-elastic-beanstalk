@@ -15,7 +15,7 @@ class ImageLoader(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        return np.array(Image.open(X).convert('L'))
+        return np.array(Image.open(X).resize((28, 28)).convert('L'))
 
 class ImageReshaper(BaseEstimator, TransformerMixin):
     def __init__(self):
