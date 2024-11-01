@@ -8,3 +8,9 @@ img {
     display: none;
     width: 280px;
 }
+
+#myCanvas {
+    cursor: crosshair;
+    position: relative;
+    margin-bottom: 10px;
+}
