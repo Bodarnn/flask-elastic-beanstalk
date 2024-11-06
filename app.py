@@ -60,7 +60,6 @@ def api():
     return jsonify(float(y_pred[0])) # ugly
 
 @app.route('/api/invert', methods=['POST'])
-@app.route('/api/invert', methods=['POST'])
 def invert_api():
     image_data = request.files['image']
     image = Image.open(image_data.stream)
