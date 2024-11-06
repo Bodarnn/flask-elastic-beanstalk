@@ -1,0 +1,6 @@
+numpy
+pillow
+scikit-learn
+flask
+Python-IO
+awsebcli

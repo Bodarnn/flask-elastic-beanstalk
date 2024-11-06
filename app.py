@@ -6,6 +6,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from flask import Flask, render_template, request, jsonify
+import io
 
 class ImageLoader(BaseEstimator, TransformerMixin):
     def __init__(self):
@@ -54,8 +55,24 @@ def index():
 @app.route('/api', methods=['POST'])
 def api():
     image = request.files['image']
+    print(image)
     y_pred = pipeline.predict(image)
     return jsonify(float(y_pred[0])) # ugly
 
+@app.route('/api/invert', methods=['POST'])
+@app.route('/api/invert', methods=['POST'])
+def invert_api():
+    image_data = request.files['image']
+    image = Image.open(image_data.stream)
+    inverted_image = Image.eval(image, lambda x: 255 - x)  # Invert colors
+
+    img_byte_arr = io.BytesIO()
+    inverted_image.save(img_byte_arr, format='PNG')
+    img_byte_arr.seek(0) 
+    
+    y_pred = pipeline.predict(img_byte_arr)  # Reshape for prediction
+    return jsonify(float(y_pred[0]))  # Return prediction result
+
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
