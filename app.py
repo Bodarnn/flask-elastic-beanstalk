@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -63,7 +63,8 @@ def api():
 def invert_api():
     image_data = request.files['image']
     image = Image.open(image_data.stream)
-    inverted_image = Image.eval(image, lambda x: 255 - x)  # Invert colors
+    image = image.convert('L')
+    inverted_image = ImageOps.invert(image)  # Invert colors
 
     img_byte_arr = io.BytesIO()
     inverted_image.save(img_byte_arr, format='PNG')
@@ -71,6 +72,13 @@ def invert_api():
     
     y_pred = pipeline.predict(img_byte_arr)  # Reshape for prediction
     return jsonify(float(y_pred[0]))  # Return prediction result
+
+    
+    # Lines to visually inspect images
+    #if not os.path.exists('temp_img_save'):
+    #   os.makedirs('temp_img_save')
+    #image.save(f'temp_img_save/canvas_img_{datetime.now().strftime("%Y%m%d_%H%M")}.png', format='PNG')
+    #inverted_image.save(f'temp_img_save/inverted_canvas_img_{datetime.now().strftime("%Y%m%d_%H%M")}.png', format='PNG')
 
 
 if __name__ == '__main__':
