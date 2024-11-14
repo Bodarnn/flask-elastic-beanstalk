@@ -1,6 +1,5 @@
+Flask
+Pillow
 numpy
-pillow
 scikit-learn
-flask
-Python-IO
-awsebcli
+pandas
