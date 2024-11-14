@@ -1,16 +1,31 @@
-body {
-    background-color: #242424;
-    color: #F5F5F5;
-    font-family: Arial, Helvetica, sans-serif;
+* {
+    border: 0;
+    margin: 0;
+    padding: 0;
 }
 
-img {
-    display: none;
+body {
+    background-color: #242424;
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1em;
+}
+
+.container {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    margin: 10px;
     width: 280px;
 }
 
-#myCanvas {
-    cursor: crosshair;
-    position: relative;
-    margin-bottom: 10px;
+button {
+    background-color: #bb86fc;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 10px;
+}
+
+button:hover {
+    background-color: #9e64e4;
 }
