@@ -3,3 +3,4 @@ Pillow
 numpy
 scikit-learn
 pandas
+gunicorn
