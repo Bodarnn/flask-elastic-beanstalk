@@ -1,157 +1,61 @@
-window.onload = function() {
-    var myCanvas = document.getElementById("myCanvas");
-    var ctx = myCanvas.getContext("2d");
-    
-    // Fill Window Width and Height
-    myCanvas.width = 280;
-    myCanvas.height = 280;
-    
-    // Set Background Color
-    ctx.fillStyle = "#fff";
-    ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);
-    
-    // Mouse Event Handlers
-    if (myCanvas) {
-        var isDown = false;
-        var canvasX, canvasY;
-        ctx.lineWidth = 5;
-        
-        $(myCanvas)
-            .mousedown(function(e) {
-                isDown = true;
-                ctx.beginPath();
-                canvasX = e.pageX - myCanvas.offsetLeft;
-                canvasY = e.pageY - myCanvas.offsetTop;
-                ctx.moveTo(canvasX, canvasY);
-            })
-            .mousemove(function(e) {
-                if (isDown) {
-                    canvasX = e.pageX - myCanvas.offsetLeft;
-                    canvasY = e.pageY - myCanvas.offsetTop;
-                    ctx.lineTo(canvasX, canvasY);
-                    ctx.strokeStyle = "#000";
-                    ctx.stroke();
-                }
-            })
-            .mouseup(function(e) {
-                isDown = false;
-                ctx.closePath();
-            });
+"use strict";
+
+class CanvasDrawer {
+    constructor() {
+        this.canvas = document.querySelector("canvas");
+        this.canvas.width = 280;
+        this.canvas.height = 280;
+
+        this.context = this.canvas.getContext("2d", {alpha: false});
+        this.context.fillStyle = "#ffffff";
+        this.context.fillRect(0, 0, 280, 280)
+        this.context.lineWidth = 20;
+        this.context.lineCap = "round";
+        this.context.strokeStyle = "000000";
+
+        this.isDrawing = false;
+
+        this.canvas.addEventListener("mousedown", this.startDrawing.bind(this));
+        this.canvas.addEventListener("mousemove", this.draw.bind(this));
+        this.canvas.addEventListener("mouseup", this.stopDrawing.bind(this));
+        this.canvas.addEventListener("mouseleave", this.stopDrawing.bind(this));
     }
-    
-    // Touch Events Handlers
-    draw = {
-        started: false,
-        start: function(evt) {
-            evt.preventDefault(); // Prevent default to avoid scrolling
-            ctx.beginPath();
-            const rect = myCanvas.getBoundingClientRect();
-            ctx.moveTo(
-                evt.touches[0].clientX - rect.left,
-                evt.touches[0].clientY - rect.top
-            );
-            this.started = true;
-        },
-        move: function(evt) {
-            evt.preventDefault();
-            if (this.started) {
-                const rect = myCanvas.getBoundingClientRect();
-                ctx.lineTo(
-                    evt.touches[0].clientX - rect.left,
-                    evt.touches[0].clientY - rect.top
-                );
-                ctx.strokeStyle = "#000";
-                ctx.lineWidth = 10;
-                ctx.stroke();
-            }
-        },
-        end: function(evt) {
-            this.started = false;
-        }
-    };
-    
-    // Touch Events
-    myCanvas.addEventListener('touchstart', draw.start, false);
-    myCanvas.addEventListener('touchend', draw.end, false);
-    myCanvas.addEventListener('touchmove', draw.move, false);
-    
-    // Disable Page Move
-    document.body.addEventListener('touchmove', function(evt) {
-        evt.preventDefault();
-    }, false);
-};
 
-document.getElementById('saveCanvas').addEventListener('click', async () => {
-    const myCanvas = document.getElementById("myCanvas");
-    const imageData = myCanvas.toDataURL("image/png");
+    startDrawing(event) {
+        this.isDrawing = true;
+        this.context.beginPath();
+        this.context.moveTo(event.offsetX, event.offsetY);
+    }
 
-    // Convert base64 image to blob
-    const response = await fetch(imageData);
-    const blob = await response.blob();
+    draw(event) {
+        if (!this.isDrawing) return;
+        this.context.lineTo(event.offsetX, event.offsetY);
+        this.context.stroke();
+    }
 
-    const formData = new FormData();
-    formData.append('image', blob, 'canvas.png');
+    stopDrawing() {
+        this.isDrawing = false;
+        this.context.closePath();
+    }
+}
 
-    try {
-        const apiResponse = await fetch('/api/invert', {
-            method: 'POST',
-            body: formData,
+const canvasDrawer = new CanvasDrawer();
+const predict = document.getElementById("predict");
+const message = document.getElementById("message");
+
+predict.addEventListener("click", () => {
+    canvasDrawer.canvas.toBlob((blob) => {
+        const formData = new FormData();
+        formData.append("image", blob);
+        fetch("/predict", {method: "POST", body: formData})
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Success:", data);
+            message.textContent = `Looks like a ${data["prediction"]}`;
+        })
+        .catch((error) => {
+            console.error("Failure:", error);
+            message.textContent = `${error.name} try again`;
         });
-
-        if (!apiResponse.ok) {
-            throw new Error(`Upload failed: ${apiResponse.statusText}`);
-        }
-
-        const result = await apiResponse.json();
-        console.log('Inverted Success:', result);
-        document.getElementById('message').textContent = `It's a ${result}`;
-
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('message').textContent = error.message;
-    }
-});
-
-// Existing Upload Functionality
-document.getElementById('uploadForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const fileInput = document.getElementById('imageInput');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        alert('Please select an image file.');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-        const response = await fetch('/api', {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (!response.ok) {
-            throw new Error(`Upload failed: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        console.log('Success:', result);
-        document.getElementById('message').textContent = `It's a ${result}`;
-
-        const imgElement = document.getElementById('uploadedImage');
-        const reader = new FileReader();
-        
-        reader.onload = (e) => {
-            imgElement.src = e.target.result;
-            imgElement.style.display = 'block';
-        };
-
-        reader.readAsDataURL(file);
-    } catch (error) {
-        console.error('Error:', error);
-        document.getElementById('message').textContent = error.message;
-    }
+    });
 });

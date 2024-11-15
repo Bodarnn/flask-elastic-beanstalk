@@ -4,20 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='normalize.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <form id="uploadForm">
-        <label for="imageInput">Select image:</label>
-        <input type="file" id="imageInput" accept="image/*">
-        <button type="submit">Upload</button>
-    </form>
-    <img id="uploadedImage">
-    <p id="message"></p>
-    <button id="saveCanvas">Classify Canvas</button>
-    <canvas id="myCanvas" style="border: 1px solid #000;">Sorry, your browser does not support HTML5 canvas technology.</canvas>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <div class="container">
+        <p id="message">Draw a digit</p>
+        <canvas id="canvas"></canvas>
+        <button id="predict">Predict</button>
+    </div>
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
